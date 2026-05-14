@@ -3,248 +3,476 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Fitness Routine Guide</title>
+    <title>Daily Fitness Timer</title>
     <style>
-        @page {
-            size: A4;
-            margin: 15mm 12mm;
-            background-color: #fcfdfe;
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --theme-color: #3498db; /* 動的に変更されます */
+            --danger-color: #e74c3c;
+            --gray-color: #95a5a6;
         }
+
         body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            color: #333;
-            line-height: 1.6;
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--card-bg);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
         header {
-            background-color: #2c3e50;
-            color: #ffffff;
-            padding: 30px 12mm;
-            margin: -15mm -12mm 30px -12mm;
-        }
-        h1 {
-            margin: 0;
-            font-size: 20pt;
-            font-weight: bold;
-        }
-        h2 {
-            font-size: 15pt;
-            color: #2c3e50;
-            border-left: 5px solid #3498db;
-            padding-left: 10px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        h3 {
-            font-size: 13pt;
-            color: #2c3e50;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 15px;
-            box-sizing: border-box;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
+            padding: 20px;
+            text-align: center;
             border-bottom: 1px solid #eee;
         }
-        th {
-            background-color: #f4f7f9;
-            color: #2c3e50;
-            font-weight: bold;
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0 0 15px 0;
+            color: var(--text-color);
         }
-        .video-card {
+
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 2px solid var(--theme-color);
+            border-radius: 8px;
             background-color: #fff;
-            border: 1px solid #e1e8ed;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            page-break-inside: avoid;
+            color: var(--text-color);
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s;
         }
-        .video-title {
-            font-weight: bold;
-            color: #2980b9;
-            display: block;
-            margin-bottom: 5px;
-            text-decoration: none;
-        }
-        .video-title:hover {
-            text-decoration: underline;
-        }
-        .video-meta {
-            font-size: 9pt;
-            color: #7f8c8d;
-            margin-bottom: 8px;
-        }
-        .tag {
+
+        .video-link {
             display: inline-block;
-            padding: 2px 8px;
-            background-color: #ebf5fb;
-            color: #3498db;
-            border-radius: 4px;
-            font-size: 8pt;
-            margin-right: 5px;
-        }
-        .url {
-            color: #3498db;
-            font-size: 10pt;
-            word-break: break-all;
-        }
-        .safety-box {
-            background-color: #fdf2f2;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 30px;
-            margin-bottom: 30px;
-        }
-        .safety-box h3 {
-            color: #721c24;
-            margin-top: 0;
-        }
-        .safety-box ul {
-            margin: 0;
-            padding-left: 20px;
-            font-size: 10pt;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--theme-color);
+            text-decoration: none;
+            font-weight: bold;
         }
         
-        /* スマートフォン向けレスポンシブ対応 */
-        @media (max-width: 600px) {
-            table {
-                font-size: 9pt;
-            }
-            th, td {
-                padding: 8px 10px;
-            }
-            header {
-                padding: 20px 15px;
-                margin: 0;
-            }
+        .video-link:hover {
+            text-decoration: underline;
+        }
+
+        .timer-display {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        .exercise-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            min-height: 2.4em;
+        }
+
+        .next-exercise {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+            margin-bottom: 30px;
+            min-height: 1.2em;
+        }
+
+        .circle-timer {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: conic-gradient(var(--theme-color) 0%, #eee 0%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: background 0.1s linear;
+        }
+
+        .circle-inner {
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .time {
+            font-size: 4.5rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--theme-color);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.1s, background-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.secondary {
+            background-color: var(--gray-color);
+            width: 50px;
+            height: 50px;
+            margin-top: 5px;
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            flex-wrap: wrap;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #eee;
+            transition: background-color 0.3s;
+        }
+
+        .dot.active {
+            background-color: var(--theme-color);
+            transform: scale(1.2);
+        }
+
+        .dot.completed {
+            background-color: var(--theme-color);
+            opacity: 0.5;
+        }
+
+        .safety-box {
+            margin: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fdf2f2;
+            border: 1px solid #f5c6cb;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #721c24;
+        }
+
+        .safety-box span {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
+
+<div class="app-container">
     <header>
-        <div class="container" style="padding: 0;">
-            <h1>デイリー・フィットネス・ルーティン・ガイド</h1>
-            <p style="margin-top: 10px; font-size: 11pt; opacity: 0.9;">
-                ITプロフェッショナルのための、科学的根拠に基づいた効率的な体調管理メニュー
-            </p>
-        </div>
+        <h1>Daily Fitness Timer</h1>
+        <select id="courseSelect">
+            <option value="morning5">☀️ 朝のストレッチ (5分)</option>
+            <option value="morning10">☀️ 朝のストレッチ (10分)</option>
+            <option value="night9">🌙 夜の熟睡ストレッチ (9分)</option>
+            <option value="abroller">🔥 腹筋ローラー (膝コロ3セット)</option>
+        </select>
+        <a id="videoLink" class="video-link" href="#" target="_blank" rel="noopener noreferrer">📺 参考動画を開く</a>
     </header>
 
-    <div class="container">
-        <h2>🗓️ 推奨される1日のフロー</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 20%;">時間帯</th>
-                    <th style="width: 40%;">ルーティン名</th>
-                    <th style="width: 40%;">おすすめの動画</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>朝（忙しい日）</td>
-                    <td>5分ストレッチ</td>
-                    <td>オガトレ 5分朝ストレッチ</td>
-                </tr>
-                <tr>
-                    <td>朝（余裕あり）</td>
-                    <td>10分ストレッチ</td>
-                    <td>オガトレ 10分朝ストレッチ</td>
-                </tr>
-                <tr>
-                    <td>日中/トレーニング時</td>
-                    <td>腹筋ローラー (膝コロ)</td>
-                    <td>MELOS 膝コロ基本フォーム</td>
-                </tr>
-                <tr>
-                    <td>夜/就寝前</td>
-                    <td>9〜10分ストレッチ</td>
-                    <td>オガトレ 9分熟睡ストレッチ</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>1. 朝のストレッチ (5-10分)</h2>
-        <div class="video-card">
-            <a href="https://www.youtube.com/watch?v=gMIlRS_lbYA" class="video-title" target="_blank" rel="noopener noreferrer">【5分】最高の朝を作る5分間ストレッチ！</a>
-            <div class="video-meta">
-                <span class="tag">5分</span> <span class="tag">理学療法士監修</span> <span class="tag">オガトレ</span>
-            </div>
-            <p style="font-size: 10pt; margin: 8px 0;">時間がない日のための最短ルーティン。体温を上げ、自律神経をスイッチさせます。</p>
-            <a href="https://www.youtube.com/watch?v=gMIlRS_lbYA" class="url" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=gMIlRS_lbYA</a>
+    <div class="progress-container" id="progressDots">
         </div>
 
-        <div class="video-card">
-            <a href="https://www.youtube.com/watch?v=2EfFlQev4rg" class="video-title" target="_blank" rel="noopener noreferrer">【10分】疲れないカラダを作る極上10分ストレッチ！</a>
-            <div class="video-meta">
-                <span class="tag">10分</span> <span class="tag">全身</span> <span class="tag">オガトレ</span>
+    <div class="timer-display">
+        <div class="exercise-name" id="exerciseName">準備</div>
+        <div class="next-exercise" id="nextExercise">Next: ---</div>
+        
+        <div class="circle-timer" id="circleTimer">
+            <div class="circle-inner">
+                <div class="time" id="timeDisplay">00:00</div>
             </div>
-            <p style="font-size: 10pt; margin: 8px 0;">骨盤や肩甲骨を重点的にほぐす中級者向け朝ルーティン。デスクワーク前の準備に最適。</p>
-            <a href="https://www.youtube.com/watch?v=2EfFlQev4rg" class="url" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=2EfFlQev4rg</a>
-        </div>
-
-        <h2>2. 夜のストレッチ (6-10分)</h2>
-        <div class="video-card">
-            <a href="https://www.youtube.com/watch?v=09C7ti0xY4k" class="video-title" target="_blank" rel="noopener noreferrer">【9分】熟睡できる！最高の寝る前専用ストレッチ</a>
-            <div class="video-meta">
-                <span class="tag">9分</span> <span class="tag">睡眠改善</span> <span class="tag">オガトレ</span>
-            </div>
-            <p style="font-size: 10pt; margin: 8px 0;">副交感神経を優位にし、深部体温を下げることで入眠をスムーズにします。布団の上で可能です。</p>
-            <a href="https://www.youtube.com/watch?v=09C7ti0xY4k" class="url" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=09C7ti0xY4k</a>
-        </div>
-
-        <div class="video-card">
-            <a href="https://www.youtube.com/watch?v=8SGo0BeJd1Q" class="video-title" target="_blank" rel="noopener noreferrer">【夜の10分ルーティーン】痩せやすい体を作る簡単全身ストレッチ</a>
-            <div class="video-meta">
-                <span class="tag">10分</span> <span class="tag">ダイエット</span> <span class="tag">MARINESS</span>
-            </div>
-            <p style="font-size: 10pt; margin: 8px 0;">体を整え、代謝を維持するためのルーティン。視覚的に分かりやすいタイマー付き。</p>
-            <a href="https://www.youtube.com/watch?v=8SGo0BeJd1Q" class="url" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=8SGo0BeJd1Q</a>
-        </div>
-
-        <h2>3. 腹筋ローラー (初心者向け)</h2>
-        <div class="video-card">
-            <a href="https://www.youtube.com/watch?v=RpSTzuMXgFE" class="video-title" target="_blank" rel="noopener noreferrer">腹筋ローラー（膝コロ）の正しいやり方・使い方</a>
-            <div class="video-meta">
-                <span class="tag">3分</span> <span class="tag">解説重視</span> <span class="tag">MELOS</span>
-            </div>
-            <p style="font-size: 10pt; margin: 8px 0;">「膝コロ」の正しい姿勢を3分で。腰を痛めないための骨盤の角度と呼吸法を学べます。</p>
-            <a href="https://www.youtube.com/watch?v=RpSTzuMXgFE" class="url" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=RpSTzuMXgFE</a>
-        </div>
-
-        <div class="video-card">
-            <a href="https://www.youtube.com/watch?v=2qj-0vvKShY" class="video-title" target="_blank" rel="noopener noreferrer">【腹筋ローラー】超初心者は「倒れ込む」だけでOK！(膝コロン)</a>
-            <div class="video-meta">
-                <span class="tag">4分</span> <span class="tag">超初心者向け</span> <span class="tag">Sho Fitness</span>
-            </div>
-            <p style="font-size: 10pt; margin: 8px 0;">まだ引き戻せない方のための「膝コロン」。安全に負荷をかけるためのステップアップ動画。</p>
-            <a href="https://www.youtube.com/watch?v=2qj-0vvKShY" class="url" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=2qj-0vvKShY</a>
-        </div>
-
-        <div class="safety-box">
-            <h3>⚠️ 重要な安全上の注意</h3>
-            <ul>
-                <li><strong>朝の注意:</strong> 起き抜けは体が脱水状態で硬いため、決して反動をつけず、痛気持ちいい程度で止めてください。</li>
-                <li><strong>腹筋ローラー:</strong> 「腰を反らさない」「立ちコロから始めない」が鉄則です。最初は3セット×5回程度から始め、筋肉痛がある時は必ず休んでください。</li>
-                <li><strong>呼吸:</strong> 全てのメニューにおいて、呼吸を止めないことが最も重要です。リラックス効果と血圧安定に直結します。</li>
-            </ul>
         </div>
     </div>
+
+    <div class="controls">
+        <button id="prevBtn" class="secondary">⏮</button>
+        <button id="playBtn">▶️</button>
+        <button id="nextBtn" class="secondary">⏭</button>
+    </div>
+
+    <div class="safety-box" id="safetyBox">
+        <span>⚠️ 重要な安全上の注意</span>
+        <div id="safetyText">起き抜けは体が脱水状態で硬いため、決して反動をつけず、痛気持ちいい程度で止めてください。</div>
+    </div>
+</div>
+
+<script>
+    // コースデータ定義
+    const courses = {
+        morning5: {
+            themeColor: '#f1c40f',
+            videoUrl: 'https://www.youtube.com/watch?v=gMIlRS_lbYA',
+            safety: '起き抜けは体が脱水状態で硬いため、決して反動をつけず、痛気持ちいい程度で止めてください。呼吸を止めないように！',
+            exercises: [
+                { name: "準備・深呼吸", duration: 30 },
+                { name: "首のストレッチ", duration: 60 },
+                { name: "肩回し・肩甲骨", duration: 60 },
+                { name: "体側（脇腹）伸ばし", duration: 60 },
+                { name: "軽い前屈・後屈", duration: 60 },
+                { name: "深呼吸・クールダウン", duration: 30 }
+            ]
+        },
+        morning10: {
+            themeColor: '#e67e22',
+            videoUrl: 'https://www.youtube.com/watch?v=2EfFlQev4rg',
+            safety: '骨盤や肩甲骨を重点的にほぐします。痛みを感じる手前でキープし、深く呼吸を続けてください。',
+            exercises: [
+                { name: "準備・深呼吸", duration: 60 },
+                { name: "首・肩の入念なストレッチ", duration: 120 },
+                { name: "肩甲骨ほぐし", duration: 120 },
+                { name: "股関節ストレッチ", duration: 120 },
+                { name: "ふくらはぎ・アキレス腱", duration: 120 },
+                { name: "全身の背伸び・深呼吸", duration: 60 }
+            ]
+        },
+        night9: {
+            themeColor: '#9b59b6',
+            videoUrl: 'https://www.youtube.com/watch?v=09C7ti0xY4k',
+            safety: '副交感神経を優位にするため、ゆったりとした呼吸を意識してください。布団の上でも可能です。',
+            exercises: [
+                { name: "リラックス・深呼吸", duration: 60 },
+                { name: "首の静的ストレッチ", duration: 120 },
+                { name: "胸を開くストレッチ", duration: 120 },
+                { name: "腰・お尻のストレッチ", duration: 120 },
+                { name: "太もも裏のストレッチ", duration: 120 }
+            ]
+        },
+        abroller: {
+            themeColor: '#e74c3c',
+            videoUrl: 'https://www.youtube.com/watch?v=RpSTzuMXgFE',
+            safety: '【鉄則】腰を反らさない・立ちコロから始めない。筋肉痛がある時は必ず休んでください。',
+            exercises: [
+                { name: "フォーム確認・準備", duration: 30 },
+                { name: "セット1 (5〜10回)", duration: 45 },
+                { name: "休憩 (インターバル)", duration: 60 },
+                { name: "セット2 (5〜10回)", duration: 45 },
+                { name: "休憩 (インターバル)", duration: 60 },
+                { name: "セット3 (5〜10回)", duration: 45 }
+            ]
+        }
+    };
+
+    // 状態管理
+    let currentCourseId = 'morning5';
+    let currentStepIndex = 0;
+    let timeLeft = 0;
+    let totalTime = 0;
+    let timerInterval = null;
+    let isPlaying = false;
+
+    // DOM要素
+    const courseSelect = document.getElementById('courseSelect');
+    const videoLink = document.getElementById('videoLink');
+    const exerciseName = document.getElementById('exerciseName');
+    const nextExercise = document.getElementById('nextExercise');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const circleTimer = document.getElementById('circleTimer');
+    const playBtn = document.getElementById('playBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressDots = document.getElementById('progressDots');
+    const safetyText = document.getElementById('safetyText');
+
+    // 初期化
+    function init() {
+        courseSelect.addEventListener('change', (e) => {
+            currentCourseId = e.target.value;
+            loadCourse();
+        });
+
+        playBtn.addEventListener('click', toggleTimer);
+        nextBtn.addEventListener('click', skipNext);
+        prevBtn.addEventListener('click', skipPrev);
+
+        loadCourse();
+    }
+
+    // コース読み込み
+    function loadCourse() {
+        clearInterval(timerInterval);
+        isPlaying = false;
+        playBtn.textContent = '▶️';
+        currentStepIndex = 0;
+
+        const course = courses[currentCourseId];
+        document.documentElement.style.setProperty('--theme-color', course.themeColor);
+        videoLink.href = course.videoUrl;
+        safetyText.textContent = course.safety;
+
+        renderDots();
+        loadStep();
+    }
+
+    // ドットの描画
+    function renderDots() {
+        const course = courses[currentCourseId];
+        progressDots.innerHTML = '';
+        course.exercises.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            if (index === currentStepIndex) dot.classList.add('active');
+            progressDots.appendChild(dot);
+        });
+    }
+
+    // ドットの状態更新
+    function updateDots() {
+        const dots = progressDots.querySelectorAll('.dot');
+        dots.forEach((dot, index) => {
+            dot.className = 'dot'; // reset
+            if (index < currentStepIndex) dot.classList.add('completed');
+            if (index === currentStepIndex) dot.classList.add('active');
+        });
+    }
+
+    // ステップの読み込み
+    function loadStep() {
+        const course = courses[currentCourseId];
+        const step = course.exercises[currentStepIndex];
+        
+        exerciseName.textContent = step.name;
+        timeLeft = step.duration;
+        totalTime = step.duration;
+        
+        if (currentStepIndex < course.exercises.length - 1) {
+            nextExercise.textContent = `Next: ${course.exercises[currentStepIndex + 1].name}`;
+        } else {
+            nextExercise.textContent = "Next: 終了 🎉";
+        }
+
+        updateDots();
+        updateDisplay();
+    }
+
+    // 表示の更新
+    function updateDisplay() {
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        timeDisplay.textContent = `${m}:${s}`;
+
+        // 円形プログレスバーの更新
+        const percentage = ((totalTime - timeLeft) / totalTime) * 100;
+        circleTimer.style.background = `conic-gradient(var(--theme-color) ${percentage}%, #eee ${percentage}%)`;
+    }
+
+    // タイマーのON/OFF
+    function toggleTimer() {
+        if (isPlaying) {
+            clearInterval(timerInterval);
+            playBtn.textContent = '▶️';
+        } else {
+            timerInterval = setInterval(tick, 1000);
+            playBtn.textContent = '⏸';
+        }
+        isPlaying = !isPlaying;
+    }
+
+    // 1秒ごとの処理
+    function tick() {
+        if (timeLeft > 0) {
+            timeLeft--;
+            updateDisplay();
+        } else {
+            // ステップ完了
+            clearInterval(timerInterval);
+            isPlaying = false;
+            playBtn.textContent = '▶️';
+            
+            const course = courses[currentCourseId];
+            if (currentStepIndex < course.exercises.length - 1) {
+                currentStepIndex++;
+                loadStep();
+                // 自動で次のステップを開始
+                toggleTimer();
+            } else {
+                exerciseName.textContent = "お疲れ様でした！✨";
+                timeDisplay.textContent = "00:00";
+                circleTimer.style.background = `conic-gradient(var(--theme-color) 100%, #eee 100%)`;
+            }
+        }
+    }
+
+    // 次へスキップ
+    function skipNext() {
+        const course = courses[currentCourseId];
+        if (currentStepIndex < course.exercises.length - 1) {
+            currentStepIndex++;
+            loadStep();
+            if (isPlaying) {
+                clearInterval(timerInterval);
+                isPlaying = false;
+                toggleTimer();
+            }
+        }
+    }
+
+    // 前へスキップ
+    function skipPrev() {
+        if (currentStepIndex > 0) {
+            currentStepIndex--;
+            loadStep();
+            if (isPlaying) {
+                clearInterval(timerInterval);
+                isPlaying = false;
+                toggleTimer();
+            }
+        }
+    }
+
+    // 起動
+    init();
+</script>
+
 </body>
 </html>
