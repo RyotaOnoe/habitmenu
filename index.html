@@ -5,163 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Fitness Routine Guide & Timer</title>
     <style>
-        /* === 1. オリジナルのガイドスタイル（正のデータ） === */
-        @page {
-            size: A4;
-            margin: 15mm 12mm;
-            background-color: #fcfdfe;
-        }
+        /* === 1. オリジナルのガイドスタイル === */
+        @page { size: A4; margin: 15mm 12mm; background-color: #fcfdfe; }
         body {
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            color: #333;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #fcfdfe;
+            color: #333; line-height: 1.6; margin: 0; padding: 0; background-color: #fcfdfe;
         }
-        header {
-            background-color: #2c3e50;
-            color: #ffffff;
-            padding: 30px 12mm;
-            margin: 0;
-        }
-        h1 {
-            margin: 0;
-            font-size: 20pt;
-            font-weight: bold;
-        }
-        h2 {
-            font-size: 15pt;
-            color: #2c3e50;
-            border-left: 5px solid #3498db;
-            padding-left: 10px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 15px 30px 15px;
-            box-sizing: border-box;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background-color: #f4f7f9;
-            color: #2c3e50;
-            font-weight: bold;
-        }
+        header { background-color: #2c3e50; color: #ffffff; padding: 30px 12mm; margin: 0; }
+        h1 { margin: 0; font-size: 20pt; font-weight: bold; }
+        h2 { font-size: 15pt; color: #2c3e50; border-left: 5px solid #3498db; padding-left: 10px; margin-top: 30px; margin-bottom: 15px; }
+        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 15px 30px 15px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f4f7f9; color: #2c3e50; font-weight: bold; }
+        
         .video-card {
-            background-color: #fff;
-            border: 1px solid #e1e8ed;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            position: relative;
+            background-color: #fff; border: 1px solid #e1e8ed; border-radius: 8px; padding: 15px; margin-bottom: 15px; position: relative;
         }
-        .video-title {
-            font-weight: bold;
-            color: #2980b9;
-            display: block;
-            margin-bottom: 5px;
-            text-decoration: none;
-        }
-        .tag {
-            display: inline-block;
-            padding: 2px 8px;
-            background-color: #ebf5fb;
-            color: #3498db;
-            border-radius: 4px;
-            font-size: 8pt;
-            margin-right: 5px;
-        }
-        .url {
-            color: #3498db;
-            font-size: 10pt;
-            word-break: break-all;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .safety-box {
-            background-color: #fdf2f2;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 30px;
-        }
+        .video-title { font-weight: bold; color: #2980b9; display: block; margin-bottom: 5px; text-decoration: none; }
+        .tag { display: inline-block; padding: 2px 8px; background-color: #ebf5fb; color: #3498db; border-radius: 4px; font-size: 8pt; margin-right: 5px; }
+        .url { color: #3498db; font-size: 10pt; word-break: break-all; display: block; margin-bottom: 10px; }
+        .safety-box { background-color: #fdf2f2; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin-top: 30px; }
 
-        /* === 2. タイマーUI === */
+        /* === 2. タイマーUI & 音楽連携機能 === */
         .timer-launch-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 10pt;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            background-color: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px;
+            font-size: 10pt; font-weight: bold; cursor: pointer; transition: background-color 0.2s;
+            display: inline-flex; align-items: center; gap: 8px; margin-top: 5px;
         }
         .timer-launch-btn:hover { background-color: #2980b9; }
 
         .timer-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(44, 62, 80, 0.95);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(44, 62, 80, 0.95); backdrop-filter: blur(8px); z-index: 1000;
+            justify-content: center; align-items: center;
         }
 
         .timer-modal {
-            background-color: #ffffff;
-            width: 90%;
-            max-width: 450px;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            position: relative;
+            background-color: #ffffff; width: 90%; max-width: 450px; border-radius: 16px; padding: 30px;
+            text-align: center; position: relative;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 28px;
-            color: #bdc3c7;
-            cursor: pointer;
+        .close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; color: #bdc3c7; cursor: pointer; }
+        .modal-title { font-size: 11pt; color: #7f8c8d; margin-bottom: 15px; }
+        
+        /* 音楽トグルスイッチ */
+        .music-toggle {
+            background-color: #f8f9fa; padding: 8px; border-radius: 8px; display: inline-block;
+            font-size: 9pt; color: #7f8c8d; margin-bottom: 15px; border: 1px solid #eee;
         }
+        .music-toggle input { margin-right: 5px; }
 
-        .modal-title { font-size: 11pt; color: #7f8c8d; margin-bottom: 20px; }
         .exercise-name { font-size: 22pt; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
-        .exercise-point { font-size: 12pt; color: #34495e; margin-bottom: 25px; min-height: 3em; line-height: 1.4; background: #f8f9fa; padding: 10px; border-radius: 8px; }
+        .exercise-point {
+            font-size: 12pt; color: #34495e; margin-bottom: 25px; min-height: 3em; line-height: 1.4;
+            background: #f8f9fa; padding: 10px; border-radius: 8px;
+        }
         .time-display { font-size: 64pt; font-weight: bold; color: #3498db; font-variant-numeric: tabular-nums; margin-bottom: 30px; line-height: 1; }
 
         .controls { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 25px; }
         .control-btn { background-color: #ecf0f1; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 18pt; color: #2c3e50; cursor: pointer; }
         .play-btn { background-color: #3498db; color: white; width: 70px; height: 70px; font-size: 24pt; }
-
         .next-exercise-label { font-size: 10pt; color: #95a5a6; }
     </style>
 </head>
@@ -183,26 +87,54 @@
             <tbody>
                 <tr><td>朝（5-10分）</td><td>5分/10分ストレッチ</td></tr>
                 <tr><td>日中</td><td>腹筋ローラー (膝コロ)</td></tr>
-                <tr><td>夜（就寝前）</td><td>9分熟睡ストレッチ</td></tr>
+                <tr><td>夜（就寝前）</td><td>9分熟睡ストレッチ / 10分全身</td></tr>
             </tbody>
         </table>
 
-        <h2>1. 朝のストレッチ</h2>
+        <h2>1. 朝のストレッチ (5-10分)</h2>
         <div class="video-card">
             <a href="https://www.youtube.com/watch?v=gMIlRS_lbYA" class="video-title" target="_blank">【5分】最高の朝を作る5分間ストレッチ！</a>
-            <button class="timer-launch-btn" onclick="openTimer('morning5')">⏱ タイマーを起動</button>
+            <div class="video-meta"><span class="tag">5分</span> <span class="tag">オガトレ</span></div>
+            <p style="font-size: 10pt; margin: 8px 0;">時間がない日のための最短ルーティン。体温を上げ、自律神経をスイッチさせます。</p>
+            <button class="timer-launch-btn" onclick="openTimer('morning5')">⏱ タイマー起動 ＋ 🎵 Apple Music</button>
+        </div>
+        <div class="video-card">
+            <a href="https://www.youtube.com/watch?v=2EfFlQev4rg" class="video-title" target="_blank">【10分】疲れないカラダを作る極上10分ストレッチ！</a>
+            <div class="video-meta"><span class="tag">10分</span> <span class="tag">全身</span> <span class="tag">オガトレ</span></div>
+            <p style="font-size: 10pt; margin: 8px 0;">骨盤や肩甲骨を重点的にほぐす中級者向け朝ルーティン。デスクワーク前の準備に最適。</p>
+            <button class="timer-launch-btn" onclick="openTimer('morning10')">⏱ タイマー起動 ＋ 🎵 Apple Music</button>
         </div>
 
-        <h2>2. 夜のストレッチ (熟睡専用)</h2>
+        <h2>2. 夜のストレッチ (熟睡・代謝維持)</h2>
         <div class="video-card">
             <a href="https://www.youtube.com/watch?v=09C7ti0xY4k" class="video-title" target="_blank">【9分】熟睡できる！最高の寝る前専用ストレッチ</a>
-            <div class="video-meta"><span class="tag">9分</span><span class="tag">30秒サイクル</span></div>
-            <p style="font-size: 10pt; margin: 8px 0;">副交感神経を優位にし、深部体温を下げることで入眠をスムーズにします。</p>
-            <button class="timer-launch-btn" style="background-color: #8e44ad;" onclick="openTimer('night9')">⏱ 熟睡タイマーを起動</button>
+            <div class="video-meta"><span class="tag">9分</span><span class="tag">30秒サイクル</span><span class="tag">睡眠改善</span></div>
+            <p style="font-size: 10pt; margin: 8px 0;">副交感神経を優位にし、深部体温を下げることで入眠をスムーズにします。布団の上で可能です。</p>
+            <button class="timer-launch-btn" style="background-color: #8e44ad;" onclick="openTimer('night9')">⏱ 熟睡タイマー起動 ＋ 🎵 Apple Music</button>
+        </div>
+        <div class="video-card">
+            <a href="https://www.youtube.com/watch?v=8SGo0BeJd1Q" class="video-title" target="_blank">【夜の10分ルーティーン】痩せやすい体を作る簡単全身ストレッチ</a>
+            <div class="video-meta"><span class="tag">10分</span><span class="tag">ダイエット</span><span class="tag">MARINESS</span></div>
+            <p style="font-size: 10pt; margin: 8px 0;">体を整え、代謝を維持するためのルーティン。視覚的に分かりやすいタイマー付き。</p>
+            <button class="timer-launch-btn" style="background-color: #8e44ad;" onclick="openTimer('night10')">⏱ タイマー起動 ＋ 🎵 Apple Music</button>
+        </div>
+
+        <h2>3. 腹筋ローラー (筋トレ)</h2>
+        <div class="video-card">
+            <a href="https://www.youtube.com/watch?v=RpSTzuMXgFE" class="video-title" target="_blank">腹筋ローラー（膝コロ）の正しいやり方・使い方</a>
+            <div class="video-meta"><span class="tag">3セット</span> <span class="tag">解説重視</span> <span class="tag">MELOS</span></div>
+            <p style="font-size: 10pt; margin: 8px 0;">「膝コロ」の正しい姿勢を3分で。腰を痛めないための骨盤の角度と呼吸法を学べます。</p>
+            <button class="timer-launch-btn" style="background-color: #e74c3c;" onclick="openTimer('abroller_melos')">⏱ 膝コロ インターバル</button>
+        </div>
+        <div class="video-card">
+            <a href="https://www.youtube.com/watch?v=2qj-0vvKShY" class="video-title" target="_blank">【腹筋ローラー】超初心者は「倒れ込む」だけでOK！(膝コロン)</a>
+            <div class="video-meta"><span class="tag">3セット</span> <span class="tag">超初心者向け</span> <span class="tag">Sho Fitness</span></div>
+            <p style="font-size: 10pt; margin: 8px 0;">まだ引き戻せない方のための「膝コロン」。安全に負荷をかけるためのステップアップ動画。</p>
+            <button class="timer-launch-btn" style="background-color: #e74c3c;" onclick="openTimer('abroller_sho')">⏱ 膝コロン インターバル</button>
         </div>
 
         <div class="safety-box">
-            <p style="font-size: 9pt; color: #721c24;"><strong>⚠️ 注意:</strong> 呼吸を止めずに「痛気持ちいい」範囲でリラックスして伸ばしてください。</p>
+            <p style="font-size: 9pt; color: #721c24;"><strong>⚠️ 注意:</strong> 呼吸を止めずに「痛気持ちいい」範囲でリラックスして伸ばしてください。腹筋ローラーは筋肉痛がある場合は必ず休んでください。</p>
         </div>
     </div>
 
@@ -210,9 +142,15 @@
         <div class="timer-modal">
             <button class="close-btn" onclick="closeTimer()">×</button>
             <div id="modalTitle" class="modal-title">---</div>
+            
+            <div id="musicToggleContainer" class="music-toggle">
+                <label><input type="checkbox" id="musicCheckbox" checked> 🎵 Apple Musicを同時再生する</label>
+            </div>
+
             <div id="exerciseName" class="exercise-name">準備</div>
             <div id="exercisePoint" class="exercise-point">---</div>
             <div id="timeDisplay" class="time-display">00:00</div>
+            
             <div class="controls">
                 <button class="control-btn" onclick="prevStep()">⏮</button>
                 <button id="playPauseBtn" class="control-btn play-btn" onclick="toggleTimer()">▶️</button>
@@ -223,21 +161,33 @@
     </div>
 
     <script>
+        const APPLE_MUSIC_MORNING = "music://music.apple.com/jp/playlist/%E6%9C%9D/pl.u-V9D7v0Nu3lpyA9q";
+        const APPLE_MUSIC_NIGHT = "music://music.apple.com/jp/playlist/%E5%A4%9C/pl.u-76oNkrMFv2XgMK4";
+
         const COURSES = {
             morning5: {
-                title: "☀️ 朝の5分ストレッチ",
-                color: "#3498db",
+                title: "☀️ 朝の5分ストレッチ", color: "#3498db", musicUrl: APPLE_MUSIC_MORNING,
                 steps: [
-                    { name: "準備・深呼吸", time: 30, point: "大きく息を吸って、体内に酸素を送り込みます。" },
-                    { name: "首のストレッチ", time: 60, point: "前後左右にゆっくり倒し、首のコリをリセット。" },
-                    { name: "肩甲骨ほぐし", time: 60, point: "肘で円を描くように大きく回します。" },
-                    { name: "体側伸ばし", time: 60, point: "脇腹から腰までをしっかり伸ばして血流UP。" },
-                    { name: "背伸び", time: 30, point: "最後にぐーっと全身を伸ばして終了！" }
+                    { name: "足首・ふくらはぎ", time: 40, point: "足首を回し、下半身の血流を促進。" },
+                    { name: "股関節（内もも）", time: 40, point: "膝を広げて股関節を動かし、体温を上げる。" },
+                    { name: "お尻のストレッチ", time: 60, point: "片足を乗せてお尻の外側を伸ばす（左右）。" },
+                    { name: "背中・肩甲骨", time: 60, point: "腕を大きく回し、胸を開く。" },
+                    { name: "脇腹・体側", time: 60, point: "腕を上げて横に倒し、体幹を刺激。" },
+                    { name: "全身のび・深呼吸", time: 40, point: "最後に大きく伸びをして完了。" }
+                ]
+            },
+            morning10: {
+                title: "☀️ 朝の10分極上ストレッチ", color: "#3498db", musicUrl: APPLE_MUSIC_MORNING,
+                steps: [
+                    { name: "首・肩のほぐし", time: 120, point: "首を回し、肩を上下させて緊張を解く。" },
+                    { name: "肩甲骨剥がし", time: 120, point: "腕を後ろに引き、肩甲骨周りを重点的に動かす。" },
+                    { name: "胸・背中のストレッチ", time: 120, point: "四つん這いで背中を丸めたり反らしたりする。" },
+                    { name: "股関節・お尻", time: 120, point: "足を前後に開き、股関節の付け根を伸ばす。" },
+                    { name: "ふくらはぎ・全身", time: 120, point: "アキレス腱を伸ばし、最後に全身で深呼吸。" }
                 ]
             },
             night9: {
-                title: "🌙 夜の9分熟睡ストレッチ",
-                color: "#8e44ad",
+                title: "🌙 夜の9分熟睡ストレッチ", color: "#8e44ad", musicUrl: APPLE_MUSIC_NIGHT,
                 steps: [
                     { name: "脇・胸のストレッチ", time: 30, point: "四つん這いで肘をつき、胸を床に近づける。" },
                     { name: "内もものストレッチ", time: 30, point: "膝を大きく開き、お尻を後ろに突き出す。" },
@@ -253,28 +203,78 @@
                     { name: "手足のグーパー", time: 30, point: "末端の血流を良くし、深部体温を下げる。" },
                     { name: "全身スキャン〜振り返り", time: 90, point: "頭から順に力を抜き、今日の楽しかった事を1つ思い出す。" }
                 ]
+            },
+            night10: {
+                title: "🌙 夜の10分ダイエット", color: "#8e44ad", musicUrl: APPLE_MUSIC_NIGHT,
+                steps: [
+                    { name: "深呼吸・首回し", time: 120, point: "ゆっくり呼吸を整え、首周りの血流を促進。" },
+                    { name: "上半身・肩甲骨", time: 120, point: "腕を大きく回し、褐色脂肪細胞を刺激。" },
+                    { name: "体側・お腹周り", time: 120, point: "脇腹を伸ばし、くびれを作る意識で。" },
+                    { name: "股関節・太もも", time: 120, point: "下半身の大きな筋肉を伸ばし、代謝を維持。" },
+                    { name: "クールダウン", time: 120, point: "心拍数を落ち着かせ、リラックス。" }
+                ]
+            },
+            abroller_melos: {
+                title: "🔥 膝コロ インターバル", color: "#e74c3c", musicUrl: null,
+                steps: [
+                    { name: "フォーム確認・準備", time: 30, point: "腰を反らさない。おへそを覗き込む姿勢を維持。" },
+                    { name: "セット1 (ワーク)", time: 45, point: "無理のない範囲で前に出し、引き戻す。" },
+                    { name: "休憩 (インターバル)", time: 60, point: "呼吸を整える。筋肉痛がある時は無理しない。" },
+                    { name: "セット2 (ワーク)", time: 45, point: "フォームが崩れないよう、腹筋を意識。" },
+                    { name: "休憩 (インターバル)", time: 60, point: "水分補給をして深呼吸。" },
+                    { name: "セット3 (追い込み)", time: 45, point: "ラストセット！限界まで出し切る。" }
+                ]
+            },
+            abroller_sho: {
+                title: "🔥 膝コロン インターバル", color: "#e74c3c", musicUrl: null,
+                steps: [
+                    { name: "フォーム確認・準備", time: 30, point: "まだ引き戻さず「倒れ込む」だけです。" },
+                    { name: "セット1 (膝コロン)", time: 45, point: "ゆっくり前に倒れ込み、耐えきれなくなったら床に落ちる。" },
+                    { name: "休憩 (インターバル)", time: 60, point: "起き上がり、元の姿勢に戻って呼吸を整える。" },
+                    { name: "セット2 (膝コロン)", time: 45, point: "ネガティブ動作（下ろす時）をゆっくり耐えるのがコツ。" },
+                    { name: "休憩 (インターバル)", time: 60, point: "肩や腰に違和感がないか確認。" },
+                    { name: "セット3 (膝コロン)", time: 45, point: "安全に負荷をかけるための最終セット。" }
+                ]
             }
         };
 
-        let currentCourse = null, currentStepIndex = 0, timeLeft = 0, timerInterval = null, isPlaying = false;
-        const overlay = document.getElementById('timerOverlay'), exerciseName = document.getElementById('exerciseName'), 
-              exercisePoint = document.getElementById('exercisePoint'), timeDisplay = document.getElementById('timeDisplay'),
-              playPauseBtn = document.getElementById('playPauseBtn'), nextLabel = document.getElementById('nextExercise');
+        let currentCourse = null, currentStepIndex = 0, timeLeft = 0, timerInterval = null;
+        let isPlaying = false, hasStartedMusic = false;
+
+        const overlay = document.getElementById('timerOverlay');
+        const exerciseName = document.getElementById('exerciseName');
+        const exercisePoint = document.getElementById('exercisePoint');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const nextLabel = document.getElementById('nextExercise');
+        const musicToggleContainer = document.getElementById('musicToggleContainer');
+        const musicCheckbox = document.getElementById('musicCheckbox');
 
         window.openTimer = function(id) {
-            currentCourse = COURSES[id]; currentStepIndex = 0; isPlaying = false; clearInterval(timerInterval);
+            currentCourse = COURSES[id]; currentStepIndex = 0; isPlaying = false; hasStartedMusic = false;
+            clearInterval(timerInterval);
+            
             document.getElementById('modalTitle').textContent = currentCourse.title;
             timeDisplay.style.color = currentCourse.color;
             playPauseBtn.style.backgroundColor = currentCourse.color;
+            
+            // 音楽設定があるコースのみトグルを表示
+            musicToggleContainer.style.display = currentCourse.musicUrl ? 'inline-block' : 'none';
+            musicCheckbox.checked = true;
+
             overlay.style.display = 'flex'; loadStep();
         };
 
-        window.closeTimer = function() { isPlaying = false; clearInterval(timerInterval); overlay.style.display = 'none'; };
+        window.closeTimer = function() {
+            isPlaying = false; clearInterval(timerInterval); overlay.style.display = 'none';
+        };
 
         function loadStep() {
             if (currentStepIndex >= currentCourse.steps.length) {
-                exerciseName.textContent = "お疲れ様でした！💤"; exercisePoint.textContent = "そのままリラックスしてお休みください。";
-                timeDisplay.textContent = "00:00"; nextLabel.textContent = ""; isPlaying = false; clearInterval(timerInterval); return;
+                exerciseName.textContent = "お疲れ様でした！✨"; 
+                exercisePoint.textContent = "今日のメニューはすべて完了です。";
+                timeDisplay.textContent = "00:00"; nextLabel.textContent = ""; 
+                isPlaying = false; clearInterval(timerInterval); playPauseBtn.textContent = '▶️'; return;
             }
             const step = currentCourse.steps[currentStepIndex];
             exerciseName.textContent = step.name; exercisePoint.textContent = step.point; timeLeft = step.time;
@@ -284,13 +284,22 @@
         }
 
         function updateDisplay() {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0'), s = (timeLeft % 60).toString().padStart(2, '0');
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
             timeDisplay.textContent = `${m}:${s}`;
         }
 
         window.toggleTimer = function() {
-            if (isPlaying) { isPlaying = false; playPauseBtn.textContent = '▶️'; clearInterval(timerInterval); }
-            else { 
+            // 初回再生時にApple Musicを連動起動
+            if (!hasStartedMusic && currentCourse.musicUrl && musicCheckbox.checked) {
+                window.location.href = currentCourse.musicUrl;
+                hasStartedMusic = true;
+            }
+
+            if (isPlaying) { 
+                isPlaying = false; playPauseBtn.textContent = '▶️'; clearInterval(timerInterval); 
+            } else { 
+                if (currentStepIndex >= currentCourse.steps.length) return;
                 isPlaying = true; playPauseBtn.textContent = '⏸';
                 timerInterval = setInterval(() => {
                     if (timeLeft > 0) { timeLeft--; updateDisplay(); }
