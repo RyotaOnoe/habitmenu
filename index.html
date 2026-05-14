@@ -4,342 +4,352 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Fitness">
-  <title>Daily Fitness & Timer</title>
+  <title>Daily Fitness Dashboard</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+
     :root {
-      /* Timer Colors */
-      --bg: #0d0d1a;
-      --surface: #161628;
-      --accent: #7c83ff;
-      --accent2: #ff7cb4;
-      --text: #f0f0ff;
-      --muted: #6666aa;
-      --rest-color: #ffb347;
+      /* Color Palette based on dark/glass aesthetic */
+      --bg-color: #0f111a;
+      --glass-bg: rgba(26, 29, 41, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent: #ef4444; /* Red accent similar to mock */
+      --accent-hover: #dc2626;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --rest-color: #3b82f6;
+      
       --safe-top: env(safe-area-inset-top, 20px);
       --safe-bottom: env(safe-area-inset-bottom, 20px);
-      
-      /* Guide Colors */
-      --guide-bg: #fcfdfe;
-      --guide-text: #333;
-      --guide-primary: #2c3e50;
-      --guide-accent: #3498db;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: var(--bg-color);
+      /* Subtle background gradient to enhance glass effect */
+      background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f111a 70%);
+      color: var(--text-main);
       height: 100dvh;
       overflow: hidden;
-      background: var(--guide-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    /* 画面切り替えロジック */
+    /* -------------------------------------
+       View Management
+       ------------------------------------- */
     .view {
       display: none;
-      height: 100%;
       width: 100%;
+      height: 100%;
+      max-width: 1200px;
+      flex-direction: column;
       overflow-y: auto;
     }
-    .view.active {
+    .view.active { display: flex; }
+
+    /* -------------------------------------
+       Guide View (Dashboard)
+       ------------------------------------- */
+    #view-guide { padding: calc(40px + var(--safe-top)) 5% 40px; }
+    
+    .guide-header { text-align: center; margin-bottom: 40px; }
+    .guide-header h1 { font-size: 28px; font-weight: 700; letter-spacing: 2px; }
+    .guide-header p { color: var(--text-muted); margin-top: 8px; font-size: 14px; }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding-bottom: var(--safe-bottom);
+    }
+
+    .card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-
-    /* =========================================
-       Guide View Styles
-       ========================================= */
-    #view-guide {
-      background-color: var(--guide-bg);
-      color: var(--guide-text);
-      line-height: 1.6;
-    }
-    .guide-header {
-      background-color: var(--guide-primary);
-      color: #ffffff;
-      padding: calc(30px + var(--safe-top)) 20px 30px;
-    }
-    .guide-header h1 { margin: 0; font-size: 20px; font-weight: bold; }
-    .guide-header p { margin-top: 8px; font-size: 14px; opacity: 0.9; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
     
-    .guide-content { padding: 20px; padding-bottom: calc(40px + var(--safe-bottom)); }
-    .guide-content h2 {
-      font-size: 18px;
-      color: var(--guide-primary);
-      border-left: 5px solid var(--guide-accent);
-      padding-left: 10px;
-      margin-top: 25px;
-      margin-bottom: 15px;
-    }
+    .card-tag { display: inline-block; padding: 4px 8px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 12px; color: var(--text-muted); margin-bottom: 12px; align-self: flex-start; }
+    .card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+    .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; flex-grow: 1; margin-bottom: 20px; }
     
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 13px; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background-color: #f4f7f9; color: var(--guide-primary); font-weight: bold; }
-
-    .video-card {
-      background-color: #fff;
-      border: 1px solid #e1e8ed;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .video-title { font-weight: bold; color: #2980b9; display: block; margin-bottom: 5px; text-decoration: none; font-size: 15px;}
-    .video-meta { font-size: 12px; color: #7f8c8d; margin-bottom: 8px; }
-    .tag { display: inline-block; padding: 2px 8px; background-color: #ebf5fb; color: var(--guide-accent); border-radius: 4px; font-size: 11px; margin-right: 5px; }
-    .desc { font-size: 13px; margin: 8px 0; color: #555; }
-    
-    .btn-timer-start {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      margin-top: 12px;
-      padding: 12px;
-      background-color: var(--guide-accent);
-      color: white;
+    .btn-quick-start {
+      background: var(--text-main);
+      color: var(--bg-color);
       border: none;
-      border-radius: 6px;
-      font-size: 15px;
-      font-weight: bold;
+      padding: 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
     }
-    .btn-timer-start:active { background-color: #2980b9; }
+    .btn-quick-start:hover { background: #cbd5e1; }
 
-    .safety-box { background-color: #fdf2f2; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin-top: 20px; }
-    .safety-box h3 { color: #721c24; margin-top: 0; font-size: 15px; }
-    .safety-box ul { margin: 0; padding-left: 20px; font-size: 13px; color: #721c24; }
+    /* -------------------------------------
+       Timer View
+       ------------------------------------- */
+    #view-timer {
+      padding: var(--safe-top) 20px var(--safe-bottom);
+      justify-content: space-between;
+    }
 
-    /* =========================================
-       Timer View Styles
-       ========================================= */
-    #view-timer { background: var(--bg); color: var(--text); overflow: hidden; }
-    .safe-top { height: var(--safe-top); flex-shrink: 0; }
-    .safe-bottom { height: var(--safe-bottom); flex-shrink: 0; }
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+    }
+    .btn-back {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .btn-back:hover { background: rgba(255,255,255,0.2); }
+    .top-title { font-weight: 700; letter-spacing: 2px; color: var(--text-muted); font-size: 14px; }
+    .top-spacer { width: 70px; } /* Balance flex */
 
-    .app { flex: 1; display: flex; flex-direction: column; padding: 12px 20px 16px; gap: 12px; overflow: hidden; }
+    /* Center Timer */
+    .timer-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
 
-    .header { display: flex; justify-content: space-between; align-items: center; }
-    .header-left { display: flex; align-items: center; gap: 10px; }
-    .btn-back { background: transparent; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 5px; }
-    .header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
-    .header-progress { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .timer-info { text-align: center; margin-bottom: 20px; z-index: 2; }
+    .phase-text { font-size: 16px; letter-spacing: 4px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+    .phase-text.rest { color: var(--rest-color); }
+    .exercise-text { font-size: 24px; font-weight: 700; }
 
-    .dots { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; padding: 0 4px; }
-    .dot { width: 20px; height: 6px; border-radius: 3px; background: var(--surface); transition: background 0.3s, transform 0.2s; }
-    .dot.done { background: var(--accent); }
-    .dot.active { background: var(--accent2); transform: scaleY(1.5); }
-    .dot.rest-done { background: var(--rest-color); }
-    .dot.rest-active { background: var(--rest-color); transform: scaleY(1.5); }
+    .time-display {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 120px;
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -4px;
+      z-index: 2;
+    }
 
-    .ring-wrap { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-    .ring-svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 100%; max-height: 100%; }
-    .ring-track { fill: none; stroke: var(--surface); stroke-width: 10; }
-    .ring-fill { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; transform-origin: center; transform: rotate(-90deg) scale(1, -1); transition: stroke-dashoffset 0.9s linear, stroke 0.3s; }
+    /* SVG Ring Background */
+    .ring-svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 400px;
+      z-index: 0;
+      opacity: 0.15;
+    }
+    .ring-track { fill: none; stroke: #ffffff; stroke-width: 4; }
+    .ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transform-origin: center;
+      transform: rotate(-90deg) scale(1, -1);
+      transition: stroke-dashoffset 1s linear, stroke 0.3s;
+    }
     .ring-fill.rest { stroke: var(--rest-color); }
 
-    .ring-content { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 0 40px; position: relative; z-index: 1; }
-    .phase-label { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); min-height: 18px; }
-    .phase-label.rest { color: var(--rest-color); }
-    .time-big { font-size: 80px; font-weight: 200; font-variant-numeric: tabular-nums; letter-spacing: -4px; line-height: 1; }
-    .exercise-name { font-size: 17px; font-weight: 600; color: var(--text); line-height: 1.3; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-    .next-label { font-size: 12px; color: var(--muted); min-height: 16px; }
+    /* Bottom Section */
+    .bottom-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      padding-bottom: 20px;
+    }
 
-    .controls { display: flex; gap: 12px; align-items: center; justify-content: center; }
-    .btn { border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s; -webkit-user-select: none; }
-    .btn:active { transform: scale(0.93); }
-    .btn-main { width: 76px; height: 76px; background: var(--accent); color: white; font-size: 28px; box-shadow: 0 0 30px rgba(124,131,255,0.4); }
-    .btn-main.running { background: #3a3a6a; box-shadow: none; }
-    .btn-sub { width: 52px; height: 52px; background: var(--surface); color: white; font-size: 20px; }
+    .next-info {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
 
-    .finished { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 16px; text-align: center; }
-    .finished.show { display: flex; }
-    .finished-emoji { font-size: 80px; }
-    .finished h2 { font-size: 28px; font-weight: 700; }
-    .finished p { color: var(--muted); font-size: 15px; }
-    .btn-action { margin-top: 8px; padding: 16px 40px; border-radius: 50px; border: none; background: var(--accent); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; }
-    .btn-secondary { background: var(--surface); margin-top: 8px; }
+    /* Controls (PAUSE, RESET, SETTINGS equivalents) */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+    .btn-control {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+    .btn-control:hover { background: rgba(255,255,255,0.1); }
+    .btn-control.primary { background: var(--accent); border-color: var(--accent); }
+    .btn-control.primary:hover { background: var(--accent-hover); }
+
+    /* Progress Dots */
+    .progress-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      width: 100%;
+    }
+    .dot {
+      flex: 1;
+      max-width: 30px;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+    .dot.done { background: var(--text-main); }
+    .dot.active { background: var(--accent); }
+    .dot.active.rest { background: var(--rest-color); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .time-display { font-size: 80px; }
+      .ring-svg { width: 280px; height: 280px; }
+      .controls { flex-wrap: wrap; }
+      .btn-control { padding: 12px 16px; flex: 1; justify-content: center; }
+    }
   </style>
 </head>
 <body>
 
 <div id="view-guide" class="view active">
   <div class="guide-header">
-    <h1>デイリー・フィットネス・ルーティン</h1>
-    <p>ITプロフェッショナルのための効率的な体調管理メニュー</p>
+    <h1>FITNESS ROUTINE</h1>
+    <p>ITプロフェッショナルのための効率的な体調管理</p>
   </div>
 
-  <div class="guide-content">
-    <h2>🗓️ 推奨される1日のフロー</h2>
-    <table>
-      <thead>
-        <tr><th>時間帯</th><th>ルーティン名</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>朝（忙しい日）</td><td>5分ストレッチ</td></tr>
-        <tr><td>朝（余裕あり）</td><td>10分ストレッチ</td></tr>
-        <tr><td>日中/トレ時</td><td>腹筋ローラー (膝コロ)</td></tr>
-        <tr><td>夜/就寝前</td><td>9〜10分ストレッチ</td></tr>
-      </tbody>
-    </table>
-
-    <h2>1. 朝のストレッチ</h2>
-    <div class="video-card">
-      <a href="https://www.youtube.com/watch?v=gMIlRS_lbYA" target="_blank" class="video-title">【5分】最高の朝を作る5分間ストレッチ！</a>
-      <div class="video-meta"><span class="tag">5分</span><span class="tag">理学療法士監修</span></div>
-      <p class="desc">時間がない日のための最短ルーティン。体温を上げ、自律神経をスイッチさせます。</p>
-      <button class="btn-timer-start" data-routine="morning-5">⏱️ 専用タイマーを開始</button>
+  <div class="grid-container" id="routineGrid">
     </div>
-
-    <div class="video-card">
-      <a href="https://www.youtube.com/watch?v=2EfFlQev4rg" target="_blank" class="video-title">【10分】疲れないカラダを作る極上10分ストレッチ！</a>
-      <div class="video-meta"><span class="tag">10分</span><span class="tag">全身</span></div>
-      <p class="desc">骨盤や肩甲骨を重点的にほぐす中級者向け朝ルーティン。デスクワーク前の準備に最適。</p>
-      <button class="btn-timer-start" data-routine="morning-10">⏱️ 専用タイマーを開始</button>
-    </div>
-
-    <h2>2. 夜のストレッチ</h2>
-    <div class="video-card">
-      <a href="https://www.youtube.com/watch?v=09C7ti0xY4k" target="_blank" class="video-title">【9分】熟睡できる！最高の寝る前専用ストレッチ</a>
-      <div class="video-meta"><span class="tag">9分</span><span class="tag">睡眠改善</span></div>
-      <p class="desc">副交感神経を優位にし、深部体温を下げることで入眠をスムーズにします。布団の上で可能です。</p>
-      <button class="btn-timer-start" data-routine="night-9">⏱️ 専用タイマーを開始</button>
-    </div>
-
-    <div class="video-card">
-      <a href="https://www.youtube.com/watch?v=8SGo0BeJd1Q" target="_blank" class="video-title">【夜の10分】痩せやすい体を作る簡単全身ストレッチ</a>
-      <div class="video-meta"><span class="tag">10分</span><span class="tag">代謝維持</span></div>
-      <p class="desc">体を整え、代謝を維持するためのルーティン。</p>
-      <button class="btn-timer-start" data-routine="night-10">⏱️ 専用タイマーを開始</button>
-    </div>
-
-    <h2>3. 筋力トレーニング</h2>
-    <div class="video-card">
-      <a href="https://www.youtube.com/watch?v=RpSTzuMXgFE" target="_blank" class="video-title">腹筋ローラー（膝コロ）基本セット</a>
-      <div class="video-meta"><span class="tag">3セット</span><span class="tag">体幹強化</span></div>
-      <p class="desc">正しい姿勢を維持し、腰を痛めないための骨盤の角度と呼吸法を意識した3セット。</p>
-      <button class="btn-timer-start" data-routine="ab-roller">⏱️ インターバルタイマーを開始</button>
-    </div>
-
-    <div class="safety-box">
-      <h3>⚠️ 重要な安全上の注意</h3>
-      <ul>
-        <li><strong>朝の注意:</strong> 起き抜けは体が脱水状態で硬いため、反動をつけず痛気持ちいい程度で止める。</li>
-        <li><strong>腹筋ローラー:</strong> 「腰を反らさない」。最初は3セットから始め、筋肉痛がある時は必ず休む。</li>
-        <li><strong>呼吸:</strong> 全てのメニューにおいて、呼吸を止めないことが最も重要です。</li>
-      </ul>
-    </div>
-  </div>
 </div>
 
 <div id="view-timer" class="view">
-  <div class="safe-top"></div>
-  <div class="app" id="mainApp">
-    <div class="header">
-      <div class="header-left">
-        <button class="btn-back" id="btnBackToGuide">✕</button>
-        <div class="header-title" id="routineTitle">🧘 ストレッチ</div>
-      </div>
-      <div class="header-progress" id="headerProgress">1 / 13</div>
+  <div class="top-bar">
+    <button class="btn-back" id="btnBack">← BACK</button>
+    <div class="top-title" id="routineTitle">STRETCH TIMER</div>
+    <div class="top-spacer"></div>
+  </div>
+
+  <div class="timer-center">
+    <svg class="ring-svg" viewBox="0 0 400 400">
+      <circle class="ring-track" cx="200" cy="200" r="190"/>
+      <circle class="ring-fill" id="ringFill" cx="200" cy="200" r="190"/>
+    </svg>
+    
+    <div class="timer-info">
+      <div class="phase-text" id="phaseText">WORKOUT</div>
+      <div class="exercise-text" id="exerciseText">胸と脇のストレッチ</div>
     </div>
+    
+    <div class="time-display" id="timeDisplay">00:30</div>
+  </div>
 
-    <div class="dots" id="dots"></div>
-
-    <div class="ring-wrap">
-      <svg class="ring-svg" id="ringSvg" width="260" height="260" viewBox="0 0 260 260">
-        <circle class="ring-track" cx="130" cy="130" r="118"/>
-        <circle class="ring-fill" id="ringFill" cx="130" cy="130" r="118"/>
-      </svg>
-      <div class="ring-content">
-        <div class="phase-label" id="phaseLabel">準備</div>
-        <div class="time-big" id="timeBig">30</div>
-        <div class="exercise-name" id="exerciseName">準備中...</div>
-        <div class="next-label" id="nextLabel"></div>
-      </div>
-    </div>
-
+  <div class="bottom-section">
+    <div class="next-info" id="nextInfo">NEXT SESSION: 内もものストレッチ</div>
+    
     <div class="controls">
-      <button class="btn btn-sub" id="btnPrev" title="前へ">⏮</button>
-      <button class="btn btn-main" id="btnPlay" title="開始">▶</button>
-      <button class="btn btn-sub" id="btnNext" title="次へ">⏭</button>
+      <button class="btn-control" id="btnReset">↻ RESET</button>
+      <button class="btn-control primary" id="btnPlay">⏸ PAUSE</button>
+      <button class="btn-control" id="btnSkip">⏭ SKIP</button>
     </div>
-  </div>
 
-  <div class="finished" id="finishedScreen">
-    <div class="finished-emoji">🎉</div>
-    <h2>お疲れさまでした！</h2>
-    <p id="finishedText">ルーティンが完了しました</p>
-    <button class="btn-action" id="btnRestart">もう一度</button>
-    <button class="btn-action btn-secondary" id="btnFinishGuide">ガイドに戻る</button>
+    <div class="progress-dots" id="progressDots">
+      </div>
   </div>
-  <div class="safe-bottom"></div>
 </div>
 
 <script>
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 1. ルーティン定義 (ROUTINE_CONFIGS)
+  // データ定義 (ROUTINE_CONFIGS)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const ROUTINE_CONFIGS = {
     'morning-5': {
-      title: '🌞 朝の5分ストレッチ',
+      title: '🌞 5 MIN MORNING',
+      desc: '時間がない日のための最短ルーティン。体温を上げ、自律神経をスイッチさせます。',
+      tag: '5分 / 朝',
       exercises: [
         { name: '深呼吸・背伸び', work: 30, rest: 5 },
         { name: '首のストレッチ（左右）', work: 30, rest: 5 },
         { name: '肩甲骨を寄せる・広げる', work: 30, rest: 5 },
         { name: '体側伸ばし（左右）', work: 30, rest: 5 },
         { name: '前屈・背面伸ばし', work: 30, rest: 5 },
-        { name: '股関節回し（左右）', work: 30, rest: 5 },
-        { name: 'アキレス腱伸ばし（左右）', work: 30, rest: 5 },
-        { name: '全身リラックス深呼吸', work: 30, rest: 0 }
+        { name: '股関節回し', work: 30, rest: 5 },
+        { name: 'アキレス腱伸ばし', work: 30, rest: 5 },
+        { name: '全身リラックス', work: 30, rest: 0 }
       ]
     },
     'morning-10': {
-      title: '☀️ 朝の10分ストレッチ',
+      title: '☀️ 10 MIN MORNING',
+      desc: '骨盤や肩甲骨を重点的にほぐす中級者向け。デスクワーク前の準備に最適。',
+      tag: '10分 / 全身',
       exercises: [
         { name: '背伸び深呼吸', work: 45, rest: 10 },
         { name: '首回し', work: 45, rest: 10 },
         { name: '肩甲骨の上下運動', work: 45, rest: 10 },
         { name: '胸を開くストレッチ', work: 45, rest: 10 },
         { name: '体幹のねじり', work: 45, rest: 10 },
-        { name: '太もも前側のストレッチ（右）', work: 45, rest: 10 },
-        { name: '太もも前側のストレッチ（左）', work: 45, rest: 10 },
+        { name: '太もも前側のストレッチ', work: 45, rest: 10 },
         { name: 'ハムストリングスのストレッチ', work: 45, rest: 10 },
         { name: '股関節を開く', work: 45, rest: 10 },
         { name: '足首回し・手首回し', work: 45, rest: 0 }
       ]
     },
     'night-9': {
-      title: '🌙 熟睡9分ストレッチ',
+      title: '🌙 9 MIN DEEP SLEEP',
+      desc: '副交感神経を優位にし、深部体温を下げることで入眠をスムーズにします。布団の上で。',
+      tag: '9分 / 睡眠改善',
       exercises: [
-        { name: '仰向けで深呼吸', work: 40, rest: 10 },
-        { name: '両膝抱え込み', work: 40, rest: 10 },
-        { name: '膝倒しねじり（右）', work: 40, rest: 10 },
-        { name: '膝倒しねじり（左）', work: 40, rest: 10 },
-        { name: '片足抱え込み（右）', work: 40, rest: 10 },
-        { name: '片足抱え込み（左）', work: 40, rest: 10 },
-        { name: 'カエル足で股関節開き', work: 40, rest: 10 },
-        { name: 'バンザイして全身伸ばし', work: 40, rest: 10 },
-        { name: 'シャバーサナ（屍のポーズ）', work: 120, rest: 0 }
-      ]
-    },
-    'night-10': {
-      title: '🔥 夜の代謝維持ストレッチ',
-      exercises: [
-        { name: 'キャット＆カウ（背骨）', work: 45, rest: 10 },
-        { name: 'ダウンドッグ', work: 45, rest: 10 },
-        { name: 'ランジストレッチ（右）', work: 45, rest: 10 },
-        { name: 'ランジストレッチ（左）', work: 45, rest: 10 },
-        { name: 'お尻のストレッチ（右）', work: 45, rest: 10 },
-        { name: 'お尻のストレッチ（左）', work: 45, rest: 10 },
-        { name: '開脚前屈', work: 45, rest: 10 },
-        { name: 'チャイルドポーズ', work: 60, rest: 0 }
+        { name: '胸と脇のストレッチ', work: 30, rest: 8 },
+        { name: '内もものストレッチ（カエル足）', work: 30, rest: 8 },
+        { name: '腰と背中のストレッチ', work: 30, rest: 8 },
+        { name: '股関節のストレッチ（右）', work: 30, rest: 8 },
+        { name: '背骨のねじり（右）', work: 30, rest: 8 },
+        { name: '股関節のストレッチ（左）', work: 30, rest: 8 },
+        { name: '背骨のねじり（左）', work: 30, rest: 8 },
+        { name: '骨盤の調整', work: 30, rest: 8 },
+        { name: 'ふくらはぎのほぐし', work: 60, rest: 8 },
+        { name: '仕上げの深呼吸・リラックス', work: 120, rest: 0 }
       ]
     },
     'ab-roller': {
-      title: '💪 腹筋ローラー（膝コロ）',
+      title: '💪 AB ROLLER (KNEE)',
+      desc: '正しい姿勢を維持し、腰を痛めないための骨盤の角度と呼吸法を意識した3セット。',
+      tag: 'インターバル / 筋トレ',
       exercises: [
         { name: 'セット 1 (限界まで)', work: 30, rest: 60 },
         { name: 'セット 2 (限界まで)', work: 30, rest: 60 },
@@ -349,103 +359,81 @@
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 2. ビュー切り替えロジック
+  // 初期化と画面切り替え
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const viewGuide = document.getElementById('view-guide');
   const viewTimer = document.getElementById('view-timer');
-  let currentExercises = [];
-  let currentTotal = 0;
+  const gridContainer = document.getElementById('routineGrid');
 
-  document.querySelectorAll('.btn-timer-start').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const routineId = e.target.getAttribute('data-routine');
-      startRoutine(routineId);
-    });
+  // ガイド画面のカード生成
+  Object.keys(ROUTINE_CONFIGS).forEach(key => {
+    const config = ROUTINE_CONFIGS[key];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <span class="card-tag">${config.tag}</span>
+      <h2 class="card-title">${config.title}</h2>
+      <p class="card-desc">${config.desc}</p>
+      <button class="btn-quick-start" onclick="startRoutine('${key}')">▶ Quick Start</button>
+    `;
+    gridContainer.appendChild(card);
   });
 
-  document.getElementById('btnBackToGuide').addEventListener('click', switchToGuide);
-  document.getElementById('btnFinishGuide').addEventListener('click', switchToGuide);
+  let currentExercises = [];
+  let currentTotal = 0;
 
   function switchToTimer() {
     viewGuide.classList.remove('active');
     viewTimer.classList.add('active');
-    window.scrollTo(0, 0);
   }
 
   function switchToGuide() {
-    pause(); // タイマー停止
+    pause();
     viewTimer.classList.remove('active');
     viewGuide.classList.add('active');
   }
 
-  function startRoutine(routineId) {
-    const config = ROUTINE_CONFIGS[routineId];
-    if (!config) return;
-    
+  document.getElementById('btnBack').addEventListener('click', switchToGuide);
+
+  function startRoutine(key) {
+    const config = ROUTINE_CONFIGS[key];
     currentExercises = config.exercises;
     currentTotal = currentExercises.length;
-    
     document.getElementById('routineTitle').textContent = config.title;
-    document.getElementById('finishedText').textContent = `${config.title} が完了しました`;
     
     buildDots();
     loadExercise(0, 'work');
-    elFinished.classList.remove('show');
-    elMain.style.display = 'flex';
     switchToTimer();
+    start(); // 自動スタート
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 3. タイマーコアロジック (既存改修)
+  // タイマーロジック
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
   let idx = 0;
-  let phase = 'work'; // 'work' | 'rest'
+  let phase = 'work';
   let remaining = 0;
   let running = false;
-  let timer = null;
+  let timerInterval = null;
 
-  const R = 118;
+  const R = 190;
   const CIRC = 2 * Math.PI * R;
   const ringFill = document.getElementById('ringFill');
   ringFill.style.strokeDasharray = CIRC;
 
-  function setRing(fraction) {
-    const offset = CIRC * (1 - fraction);
-    ringFill.style.strokeDashoffset = offset;
-  }
-
-  let audioCtx = null;
-  function getAudioCtx() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    return audioCtx;
-  }
-  function beep(freq, dur, vol = 0.3) {
-    try {
-      const ctx = getAudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = freq; osc.type = 'sine';
-      gain.gain.setValueAtTime(vol, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
-    } catch(e) {}
-  }
-  function soundStart()  { beep(880, 0.15); }
-  function soundRest()   { beep(440, 0.3); }
-  function soundFinish() { beep(660, 0.1); setTimeout(()=>beep(880,0.2), 120); setTimeout(()=>beep(1100,0.4),260); }
-  function soundCountdown() { beep(660, 0.1, 0.2); }
-  function vibrate(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
-
-  const elTime = document.getElementById('timeBig');
-  const elName = document.getElementById('exerciseName');
-  const elNext = document.getElementById('nextLabel');
-  const elPhase = document.getElementById('phaseLabel');
-  const elProgress = document.getElementById('headerProgress');
+  // DOM Elements
+  const elTime = document.getElementById('timeDisplay');
+  const elPhase = document.getElementById('phaseText');
+  const elName = document.getElementById('exerciseText');
+  const elNext = document.getElementById('nextInfo');
   const elPlay = document.getElementById('btnPlay');
-  const elDots = document.getElementById('dots');
-  const elMain = document.getElementById('mainApp');
-  const elFinished = document.getElementById('finishedScreen');
+  const elDots = document.getElementById('progressDots');
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
 
   function buildDots() {
     elDots.innerHTML = '';
@@ -463,7 +451,10 @@
       if(!d) continue;
       d.className = 'dot';
       if (i < idx) d.classList.add('done');
-      else if (i === idx) d.classList.add('active');
+      else if (i === idx) {
+        d.classList.add('active');
+        if (phase === 'rest') d.classList.add('rest');
+      }
     }
   }
 
@@ -472,29 +463,28 @@
     const ex = currentExercises[idx];
     const totalPhaseTime = (phase === 'work') ? ex.work : ex.rest;
 
-    elTime.textContent = remaining;
+    elTime.textContent = formatTime(remaining);
     elName.textContent = ex.name;
-    elPhase.textContent = phase === 'work' ? 'トレーニング' : '休憩';
-    elPhase.className = 'phase-label' + (phase === 'rest' ? ' rest' : '');
+    elPhase.textContent = phase === 'work' ? 'WORKOUT' : 'REST';
+    elPhase.className = 'phase-text' + (phase === 'rest' ? ' rest' : '');
     ringFill.className = 'ring-fill' + (phase === 'rest' ? ' rest' : '');
-    elProgress.textContent = `${idx + 1} / ${currentTotal}`;
-    elPlay.textContent = running ? '⏸' : '▶';
-    elPlay.className = 'btn btn-main' + (running ? ' running' : '');
+    
+    elPlay.innerHTML = running ? '⏸ PAUSE' : '▶ RESUME';
 
-    setRing(remaining / totalPhaseTime);
+    const fraction = totalPhaseTime > 0 ? (remaining / totalPhaseTime) : 0;
+    ringFill.style.strokeDashoffset = CIRC * (1 - fraction);
 
     if (idx < currentTotal - 1 && phase === 'work') {
-      elNext.textContent = `次: ${currentExercises[idx + 1].name}`;
+      elNext.textContent = `NEXT: ${currentExercises[idx + 1].name}`;
     } else if (phase === 'rest') {
-      elNext.textContent = `次: ${ex.name} が終わったら…`;
+      elNext.textContent = `UP NEXT: ${currentExercises[idx].name} (完了後)`;
     } else {
-      elNext.textContent = '';
+      elNext.textContent = 'SESSION COMPLETE PENDING...';
     }
     updateDots();
   }
 
   function loadExercise(i, ph = 'work') {
-    if(i >= currentTotal) return;
     idx = i;
     phase = ph;
     const ex = currentExercises[i];
@@ -515,29 +505,30 @@
       if (idx === currentTotal - 1) { finish(); return; }
       if (ex.rest > 0) {
         phase = 'rest'; remaining = ex.rest;
-        soundRest(); vibrate([100, 50, 100]);
+        soundRest();
       } else {
         idx++; phase = 'work'; remaining = currentExercises[idx].work;
-        soundStart(); vibrate([200]);
+        soundStart();
       }
     } else {
       idx++; phase = 'work'; remaining = currentExercises[idx].work;
-      soundStart(); vibrate([200]);
+      soundStart();
     }
     updateUI();
   }
 
   function start() {
     if (running || currentExercises.length === 0) return;
-    getAudioCtx();
+    getAudioCtx(); // Wake Audio API
+    requestWakeLock();
     running = true;
-    timer = setInterval(tick, 1000);
+    timerInterval = setInterval(tick, 1000);
     updateUI();
   }
 
   function pause() {
     running = false;
-    clearInterval(timer);
+    clearInterval(timerInterval);
     updateUI();
   }
 
@@ -549,22 +540,55 @@
   function finish() {
     pause();
     soundFinish();
-    vibrate([200, 100, 200, 100, 400]);
-    elMain.style.display = 'none';
-    elFinished.classList.add('show');
+    elTime.textContent = "DONE";
+    elPhase.textContent = "COMPLETED";
+    elName.textContent = "お疲れさまでした！";
+    elNext.textContent = "";
+    ringFill.style.strokeDashoffset = 0;
   }
 
-  elPlay.addEventListener('click', () => { running ? pause() : start(); });
-  document.getElementById('btnPrev').addEventListener('click', () => { pause(); if (idx > 0) loadExercise(idx - 1, 'work'); else loadExercise(0, 'work'); });
-  document.getElementById('btnNext').addEventListener('click', () => { pause(); if (idx < currentTotal - 1) loadExercise(idx + 1, 'work'); });
-  document.getElementById('btnRestart').addEventListener('click', () => { elFinished.classList.remove('show'); elMain.style.display = 'flex'; reset(); });
+  // ボタンイベント
+  elPlay.addEventListener('click', () => running ? pause() : start());
+  document.getElementById('btnReset').addEventListener('click', reset);
+  document.getElementById('btnSkip').addEventListener('click', () => {
+    pause();
+    if (idx < currentTotal - 1) {
+      loadExercise(idx + 1, 'work');
+      start();
+    } else {
+      finish();
+    }
+  });
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // オーディオ & WakeLock (デバイス制御)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+  function beep(freq, dur, vol = 0.1) {
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+    } catch(e) {}
+  }
+  function soundStart()  { beep(880, 0.15); }
+  function soundRest()   { beep(440, 0.3); }
+  function soundFinish() { beep(660, 0.1); setTimeout(()=>beep(880,0.2), 120); setTimeout(()=>beep(1100,0.4),260); }
+  function soundCountdown() { beep(660, 0.1, 0.05); }
 
   let wakeLock = null;
   async function requestWakeLock() {
     try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
   }
-  elPlay.addEventListener('click', requestWakeLock, { once: true });
-
 </script>
 </body>
 </html>
