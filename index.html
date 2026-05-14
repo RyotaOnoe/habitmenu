@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Fitness Routine Guide & Timer</title>
     <style>
-        /* === 1. オリジナルのガイドスタイル === */
+        /* === 1. ガイドのベーススタイル === */
         @page { size: A4; margin: 15mm 12mm; background-color: #fcfdfe; }
         body {
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
@@ -38,35 +38,40 @@
         .timer-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(44, 62, 80, 0.95); backdrop-filter: blur(8px); z-index: 1000;
-            justify-content: center; align-items: center;
+            justify-content: center; align-items: center; overflow-y: auto;
         }
 
         .timer-modal {
-            background-color: #ffffff; width: 90%; max-width: 450px; border-radius: 16px; padding: 30px;
-            text-align: center; position: relative;
+            background-color: #ffffff; width: 90%; max-width: 450px; border-radius: 16px; padding: 25px;
+            text-align: center; position: relative; margin: auto;
         }
 
-        .close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; color: #bdc3c7; cursor: pointer; }
-        .modal-title { font-size: 11pt; color: #7f8c8d; margin-bottom: 15px; }
+        .close-btn { position: absolute; top: 12px; right: 15px; background: none; border: none; font-size: 28px; color: #bdc3c7; cursor: pointer; }
+        .modal-title { font-size: 11pt; color: #7f8c8d; margin-bottom: 15px; font-weight: bold; }
         
-        /* 音楽トグルスイッチ */
-        .music-toggle {
-            background-color: #f8f9fa; padding: 8px; border-radius: 8px; display: inline-block;
-            font-size: 9pt; color: #7f8c8d; margin-bottom: 15px; border: 1px solid #eee;
-        }
-        .music-toggle input { margin-right: 5px; }
+        /* 音楽プレイヤー枠 */
+        .music-container { margin-bottom: 20px; background-color: #f8f9fa; border-radius: 12px; padding: 5px; }
+        .music-notice { font-size: 8pt; color: #95a5a6; margin-top: 5px; margin-bottom: 5px; }
 
-        .exercise-name { font-size: 22pt; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .exercise-name { font-size: 20pt; font-weight: bold; color: #2c3e50; margin-bottom: 8px; min-height: 1.2em; }
         .exercise-point {
-            font-size: 12pt; color: #34495e; margin-bottom: 25px; min-height: 3em; line-height: 1.4;
-            background: #f8f9fa; padding: 10px; border-radius: 8px;
+            font-size: 11pt; color: #34495e; margin-bottom: 20px; min-height: 3em; line-height: 1.4;
+            background: #fdfefe; border: 1px solid #eee; padding: 10px; border-radius: 8px;
         }
-        .time-display { font-size: 64pt; font-weight: bold; color: #3498db; font-variant-numeric: tabular-nums; margin-bottom: 30px; line-height: 1; }
+        .time-display { font-size: 55pt; font-weight: bold; color: #3498db; font-variant-numeric: tabular-nums; margin-bottom: 20px; line-height: 1; }
 
-        .controls { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 25px; }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; }
         .control-btn { background-color: #ecf0f1; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 18pt; color: #2c3e50; cursor: pointer; }
-        .play-btn { background-color: #3498db; color: white; width: 70px; height: 70px; font-size: 24pt; }
+        .play-btn { background-color: #3498db; color: white; width: 70px; height: 70px; font-size: 24pt; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .next-exercise-label { font-size: 10pt; color: #95a5a6; }
+
+        /* レスポンシブ微調整 */
+        @media (max-height: 700px) {
+            .timer-modal { padding: 15px; }
+            .time-display { font-size: 45pt; margin-bottom: 10px; }
+            .exercise-name { font-size: 16pt; }
+            .exercise-point { font-size: 10pt; margin-bottom: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -143,8 +148,9 @@
             <button class="close-btn" onclick="closeTimer()">×</button>
             <div id="modalTitle" class="modal-title">---</div>
             
-            <div id="musicToggleContainer" class="music-toggle">
-                <label><input type="checkbox" id="musicCheckbox" checked> 🎵 Apple Musicを同時再生する</label>
+            <div id="musicContainer" class="music-container" style="display: none;">
+                <p class="music-notice">▼ 音楽を流す場合は、こちらの再生ボタンを押してください ▼</p>
+                <iframe id="appleMusicPlayer" allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:660px;overflow:hidden;background:transparent;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"></iframe>
             </div>
 
             <div id="exerciseName" class="exercise-name">準備</div>
@@ -161,12 +167,13 @@
     </div>
 
     <script>
-        const APPLE_MUSIC_MORNING = "music://music.apple.com/jp/playlist/%E6%9C%9D/pl.u-V9D7v0Nu3lpyA9q";
-        const APPLE_MUSIC_NIGHT = "music://music.apple.com/jp/playlist/%E5%A4%9C/pl.u-76oNkrMFv2XgMK4";
+        // 埋め込み用URL (embed.music.apple.com) を使用
+        const EMBED_MORNING = "https://embed.music.apple.com/jp/playlist/%E6%9C%9D/pl.u-V9D7v0Nu3lpyA9q";
+        const EMBED_NIGHT = "https://embed.music.apple.com/jp/playlist/%E5%A4%9C/pl.u-76oNkrMFv2XgMK4";
 
         const COURSES = {
             morning5: {
-                title: "☀️ 朝の5分ストレッチ", color: "#3498db", musicUrl: APPLE_MUSIC_MORNING,
+                title: "☀️ 朝の5分ストレッチ", color: "#3498db", musicUrl: EMBED_MORNING,
                 steps: [
                     { name: "足首・ふくらはぎ", time: 40, point: "足首を回し、下半身の血流を促進。" },
                     { name: "股関節（内もも）", time: 40, point: "膝を広げて股関節を動かし、体温を上げる。" },
@@ -177,7 +184,7 @@
                 ]
             },
             morning10: {
-                title: "☀️ 朝の10分極上ストレッチ", color: "#3498db", musicUrl: APPLE_MUSIC_MORNING,
+                title: "☀️ 朝の10分極上ストレッチ", color: "#3498db", musicUrl: EMBED_MORNING,
                 steps: [
                     { name: "首・肩のほぐし", time: 120, point: "首を回し、肩を上下させて緊張を解く。" },
                     { name: "肩甲骨剥がし", time: 120, point: "腕を後ろに引き、肩甲骨周りを重点的に動かす。" },
@@ -187,7 +194,7 @@
                 ]
             },
             night9: {
-                title: "🌙 夜の9分熟睡ストレッチ", color: "#8e44ad", musicUrl: APPLE_MUSIC_NIGHT,
+                title: "🌙 夜の9分熟睡ストレッチ", color: "#8e44ad", musicUrl: EMBED_NIGHT,
                 steps: [
                     { name: "脇・胸のストレッチ", time: 30, point: "四つん這いで肘をつき、胸を床に近づける。" },
                     { name: "内もものストレッチ", time: 30, point: "膝を大きく開き、お尻を後ろに突き出す。" },
@@ -205,7 +212,7 @@
                 ]
             },
             night10: {
-                title: "🌙 夜の10分ダイエット", color: "#8e44ad", musicUrl: APPLE_MUSIC_NIGHT,
+                title: "🌙 夜の10分ダイエット", color: "#8e44ad", musicUrl: EMBED_NIGHT,
                 steps: [
                     { name: "深呼吸・首回し", time: 120, point: "ゆっくり呼吸を整え、首周りの血流を促進。" },
                     { name: "上半身・肩甲骨", time: 120, point: "腕を大きく回し、褐色脂肪細胞を刺激。" },
@@ -238,8 +245,7 @@
             }
         };
 
-        let currentCourse = null, currentStepIndex = 0, timeLeft = 0, timerInterval = null;
-        let isPlaying = false, hasStartedMusic = false;
+        let currentCourse = null, currentStepIndex = 0, timeLeft = 0, timerInterval = null, isPlaying = false;
 
         const overlay = document.getElementById('timerOverlay');
         const exerciseName = document.getElementById('exerciseName');
@@ -247,26 +253,33 @@
         const timeDisplay = document.getElementById('timeDisplay');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const nextLabel = document.getElementById('nextExercise');
-        const musicToggleContainer = document.getElementById('musicToggleContainer');
-        const musicCheckbox = document.getElementById('musicCheckbox');
+        const musicContainer = document.getElementById('musicContainer');
+        const appleMusicPlayer = document.getElementById('appleMusicPlayer');
 
         window.openTimer = function(id) {
-            currentCourse = COURSES[id]; currentStepIndex = 0; isPlaying = false; hasStartedMusic = false;
+            currentCourse = COURSES[id]; currentStepIndex = 0; isPlaying = false;
             clearInterval(timerInterval);
             
             document.getElementById('modalTitle').textContent = currentCourse.title;
             timeDisplay.style.color = currentCourse.color;
             playPauseBtn.style.backgroundColor = currentCourse.color;
             
-            // 音楽設定があるコースのみトグルを表示
-            musicToggleContainer.style.display = currentCourse.musicUrl ? 'inline-block' : 'none';
-            musicCheckbox.checked = true;
+            // 音楽設定があるコースのみプレイヤーを表示し、srcをセット
+            if (currentCourse.musicUrl) {
+                appleMusicPlayer.src = currentCourse.musicUrl;
+                musicContainer.style.display = 'block';
+            } else {
+                appleMusicPlayer.src = "";
+                musicContainer.style.display = 'none';
+            }
 
             overlay.style.display = 'flex'; loadStep();
         };
 
         window.closeTimer = function() {
-            isPlaying = false; clearInterval(timerInterval); overlay.style.display = 'none';
+            isPlaying = false; clearInterval(timerInterval); 
+            appleMusicPlayer.src = ""; // モーダルを閉じるときに音楽も止める
+            overlay.style.display = 'none';
         };
 
         function loadStep() {
@@ -290,12 +303,6 @@
         }
 
         window.toggleTimer = function() {
-            // 初回再生時にApple Musicを連動起動
-            if (!hasStartedMusic && currentCourse.musicUrl && musicCheckbox.checked) {
-                window.location.href = currentCourse.musicUrl;
-                hasStartedMusic = true;
-            }
-
             if (isPlaying) { 
                 isPlaying = false; playPauseBtn.textContent = '▶️'; clearInterval(timerInterval); 
             } else { 
